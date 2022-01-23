@@ -1,24 +1,28 @@
-﻿using BepInEx;
-using BepInEx.Logging;
-using BepInEx.Configuration;
+﻿using System;
 using System.Collections.Generic;
-using DiskCardGame;
-using APIPlugin;
-using System.Reflection;
-using UnityEngine;
-using System.Linq;
-using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Act3Cards.MoxCard;
+using APIPlugin;
+using BepInEx;
+using BepInEx.Logging;
+using DiskCardGame;
+using TDLib.FileManagement;
+using TDLib.GameContent;
+using TDLib.Strings;
+using UnityEngine;
 
 namespace Act3Cards {
 	[BepInPlugin(GUID, Name, Version)]
 	[BepInDependency("cyantist.inscryption.api", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("zorro.inscryption.infiniscryption.spells", BepInDependency.DependencyFlags.HardDependency)]
+	[BepInDependency("io.github.TeamDoodz.TDLib", BepInDependency.DependencyFlags.HardDependency)]
 	public class MainPlugin : BaseUnityPlugin {
 
 		internal const string GUID = "io.github.TeamDoodz." + Name;
 		internal const string Name = nameof(Act3Cards);
-		internal const string Version = "0.2.0";
+		internal const string Version = "1.0.0";
 		internal static ManualLogSource logger;
 
 		internal static string[] Blacklist = new string[] {
@@ -61,6 +65,7 @@ namespace Act3Cards {
 			"XformerPorcupineBeast", // QU177
 			"BlueMage", // Regular blue mage. Sigil is busted and does nothing ATM
 			"BlueMage_Fused",
+			"PracticeMageSmall", // Practice mage used by the Dummy fight.
 			"CagedWolf", // The caged wolf you get from the wardrobe. Since there is no normal way to get it the program thinks its not from Act 1
 			"CatUndead", // Undead form of the regular cat. Traders_Menagerie_of_Tokens already adds this as a tradeable card
 			"DefaultTail", "SkinkTail", "Tail_Bird", "Tail_Furry", "Tail_Insect", // Tail from the tail sigil
@@ -93,7 +98,10 @@ namespace Act3Cards {
 
 		internal static readonly string[] SideDeckCards = new string[] {
 			"EmptyVessel",
-			"Skeleton"
+			"Skeleton",
+			"MoxEmerald",
+			"MoxSapphire",
+			"MoxRuby",
 		};
 
 		// having a blacklist for this would be impossible because more mods are made all the time
@@ -250,11 +258,10 @@ namespace Act3Cards {
 				allValidCards =  AllCards.FindAll((card) => {
 					bool InAct1 = card.temple == CardTemple.Nature && (card.metaCategories.Contains(CardMetaCategory.ChoiceNode) || card.metaCategories.Contains(CardMetaCategory.TraderOffer) || card.metaCategories.Contains(CardMetaCategory.Rare));
 					if (InAct1) {
-						logger.LogInfo($"{card.name} is already in act 1");
 						return false; // dont do these other calculations
 					}
-					bool InBlacklist = Blacklist.Contains(card.name);
 					bool IsValidTemple = TemplesToAdd.Contains(card.temple);
+					bool InBlacklist = Blacklist.Contains(card.name);
 					bool IsSideDeck = SideDeckCards.Contains(card.name);
 					return IsValidTemple && (!InBlacklist || IsSideDeck);
 				});
@@ -269,7 +276,9 @@ namespace Act3Cards {
 			foreach(var name in cards) {
 				try {
 					var card = NewCard.cards.Find((moddedCard) => moddedCard.name == name);
-					outp.Add(card);
+					if (card != null) {
+						outp.Add(card);
+					}
 				} catch(NullReferenceException) {
 					logger.LogWarning($"Null ref when trying to access card {name}");
 					continue;
@@ -288,6 +297,8 @@ namespace Act3Cards {
 
 			GetConfig();
 			EnableValidCards();
+			RandomMox.Init();
+			new AddMoxCard().Create("Act3Cards_Mox",assets.LoadPNG("portrait_mox"));
 		}
 
 		private void GetConfig() {
@@ -314,27 +325,28 @@ namespace Act3Cards {
 		}
 
 		private void EnableValidCards() {
-			logger.LogMessage($"--------Begin making cards---------");
+			logger.LogMessage($"----------Begin making cards-----------");
 			int cardsMade = 0;
 			List<CardInfo> allValidCards = AllValidCards;
 			foreach (var card in allValidCards) { //CardLoader.AllData is readonly, which is good since we dont want to accidentally write to it
 				EnableCard(card, SideDeckCards.Contains(card.name));
 				cardsMade++;
 			}
-			logger.LogMessage($"----Successfully made {cardsMade} cards----");
+			logger.LogMessage($"------Successfully made {cardsMade} cards------");
 		}
-
+		 
 		private void EnableCard(CardInfo card, bool sideDeck) {
 			try {
 				if (!UseBlankCards && card.portraitTex == null) return;
 
-				Texture2D defaultTex = File.Exists(assets.PathFor(card.name, "png")) ? assets.LoadPNG(card.name) : card.GetPortrait(true, true);
+				string cardName = card.name;
+				logger.LogMessage($"Making card {cardName} {(sideDeck ? "a side deck choice" : "usable in act 1")}");
+
+				Texture2D defaultTex = File.Exists(assets.PathFor(card.name, "png")) ? assets.LoadPNG(card.name) : card.GetPortrait(true, false);
+				bool isDecal = defaultTex.width == 125;
 
 				// this line prevents the texture from being blurry. It should already be set to this for GBC/normal cards, but not for textures on disk
 				defaultTex.filterMode = FilterMode.Point;
-
-				string cardName = card.name;
-				logger.LogMessage($"Making card {cardName} {(sideDeck ? "a side deck choice" : "usable in act 1")}");
 
 				var meta = card.metaCategories;
 				var appear = card.appearanceBehaviour;
@@ -343,15 +355,32 @@ namespace Act3Cards {
 				var melted = card.iceCubeParams;
 				var sigils = card.DefaultAbilities;
 				var staticon = card.SpecialStatIcon;
+				var special = card.SpecialAbilities;
 				var tribes = GetTribesForCard(card.DisplayedNameEnglish);
 
 				if (!sideDeck && !meta.Contains(CardMetaCategory.Rare)) meta.AddRange(defaultMeta);
 				if (meta.Contains(CardMetaCategory.Rare) && !appear.Contains(CardAppearanceBehaviour.Appearance.RareCardBackground)) appear.Add(CardAppearanceBehaviour.Appearance.RareCardBackground);
 				if (!sideDeck && appear.Contains(CardAppearanceBehaviour.Appearance.RareCardBackground) && !meta.Contains(CardMetaCategory.Rare)) meta.Add(CardMetaCategory.Rare);
-				if (sideDeck) traits.Add(SideDeckTrait);
-				if (cardName == EmptyVessel && EmptyVesselConduit) sigils.Add(Ability.ConduitNull);
-				if (card.traits.Contains(Trait.Terrain)) appear.Add(CardAppearanceBehaviour.Appearance.TerrainBackground);
-
+				if (sideDeck) {
+					logger.LogInfo($"{card.name} is a side deck");
+					traits.Add(SideDeckTrait);
+				}
+				if (cardName == EmptyVessel && EmptyVesselConduit) {
+					logger.LogInfo($"Adding null conduit sigil to {card.name}");
+					sigils.Add(Ability.ConduitNull);
+				}
+				if (card.traits.Contains(Trait.Terrain)) {
+					logger.LogInfo($"{card.name} is terrain");
+					appear.Add(CardAppearanceBehaviour.Appearance.TerrainBackground);
+				}
+				if (card.IsGem()) {
+					logger.LogInfo($"{card.name} provides gems");
+					traits.Add(Trait.Gem);
+				}
+				if (isDecal) {
+					logger.LogInfo($"{card.name} is full portrait");
+					appear.Add(CardAppearanceBehaviour.Appearance.FullCardPortrait);
+				}
 				if (meta.Contains(CardMetaCategory.Rare)) logger.LogDebug($"Card {cardName} is a rare");
 
 				NewCard.Add(
@@ -364,18 +393,20 @@ namespace Act3Cards {
 					temple: CardTemple.Nature,
 					tribes: tribes,
 					abilities: sigils,
-					defaultTex: defaultTex,
+					defaultTex: isDecal? null : defaultTex,
+					decals: isDecal? new List<Texture>() { defaultTex } : new List<Texture>(),
 					energyCost: card.EnergyCost,
 					bonesCost: card.BonesCost,
 					bloodCost: card.BloodCost,
 					gemsCost: card.GemsCost,
+					specialAbilities: special,
 					appearanceBehaviour: appear,
 					evolveParams: evolvesInto,
 					iceCubeParams: melted,
 					specialStatIcon: staticon
 				);
 			} catch(NullReferenceException) {
-				logger.LogWarning($"Null ref when accessing card {card.name}. It probably does not exist, which, depending on your modlist, could be intentional.");
+				logger.LogWarning($"Null ref when generating card {card.name}. If that card does not exist, ignore this error. Otherwise report this warning to me.");
 			}
 			logger.LogInfo(""); // newline for readability
 		}

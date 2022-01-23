@@ -19,9 +19,17 @@ Right now you can:
 ## Changelog
 
 ## 1.0.0
+- Mod now has a Github page: https://github.com/TeamDoodz/Act3Cards
+- Added a Mox sidedeck. This change won't do anything if you are not using the selectable side deck mod.
+- Wizard cards with a high-res portrait now render correctly
 - Cards will get procedural tribes based on their name. For example, the Shutterbug will get the Insect tribe because it has "bug" in it's name.
 - Made log entries more readable
+- Fixed custom textures, I think
+- Fixed issue with some gem cards not counting as gems
+- Special abilities now work properly, which means spells should work now
 - All temples are now on by default
+- Mod now requires the Spell Card Toolkit
+- Mod now requires TDLib
 
 ## 0.3.0
 - Updated to AraCardExpansionAct2 v1.0.0

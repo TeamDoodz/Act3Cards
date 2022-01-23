@@ -1,7 +1,7 @@
 {
     "name": "Act3Cards",
-    "version_number": "0.3.0",
-    "website_url": "https://inscryption.thunderstore.io/package/TeamDoodz/LongHaul/",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/TeamDoodz/Act3Cards",
     "description": "Use cards from act 3 (or any act for that matter) in act 1",
     "dependencies": [
         "API_dev-API-1.12.1",

@@ -19,6 +19,7 @@ Right now you can:
 ## Changelog
 
 ## 1.0.0
+- Cards will get procedural tribes based on their name. For example, the Shutterbug will get the Insect tribe because it has "bug" in it's name.
 - Made log entries more readable
 - All temples are now on by default
 

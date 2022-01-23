@@ -9,6 +9,7 @@ using UnityEngine;
 using System.Linq;
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Act3Cards {
 	[BepInPlugin(GUID, Name, Version)]
@@ -90,7 +91,7 @@ namespace Act3Cards {
 			"Tree_SnowCovered"
 		};
 
-		internal static readonly string[] SideDeckCards = new string[] { 
+		internal static readonly string[] SideDeckCards = new string[] {
 			"EmptyVessel",
 			"Skeleton"
 		};
@@ -124,17 +125,34 @@ namespace Act3Cards {
 			"ChaosSpell"
 		};
 
-		internal static readonly string[] HoovedKeywords = new string[] { 
+		internal static readonly string[] HoovedKeywords = new string[] {
 			"horse",
 			"elk",
 			"fawn",
 			"donkey",
-			"mule"
+			"mule",
+			"Pharaoh's Pets"
 		};
+		private static string hooved;
+		internal static string HoovedRegex { 
+			get {
+				if (hooved != null) return hooved;
+				hooved = HoovedKeywords.AsRegex().ToString();
+				return hooved;
+			}
+		}
 
 		internal static readonly string[] SquirrelKeywords = new string[] {
 			"squirrel"
 		};
+		private static string squirrel;
+		internal static string SquirrelRegex {
+			get {
+				if (squirrel != null) return squirrel;
+				squirrel = SquirrelKeywords.AsRegex().ToString();
+				return squirrel;
+			}
+		}
 
 		internal static readonly string[] ReptileKeywords = new string[] {
 			"frog",
@@ -142,6 +160,14 @@ namespace Act3Cards {
 			"hrokkal",
 			"mantis"
 		};
+		private static string reptile;
+		internal static string ReptileRegex {
+			get {
+				if (reptile != null) return reptile;
+				reptile = ReptileKeywords.AsRegex().ToString();
+				return reptile;
+			}
+		}
 
 		internal static readonly string[] InsectKeywords = new string[] {
 			"bug",
@@ -149,17 +175,47 @@ namespace Act3Cards {
 			"ant",
 			"worm"
 		};
+		private static string insect;
+		internal static string InsectRegex {
+			get {
+				if (insect != null) return insect;
+				insect = InsectKeywords.AsRegex().ToString();
+				return insect;
+			}
+		}
 
 		internal static readonly string[] AirborneKeywords = new string[] {
 			"drone",
 			"bird",
 			"raven",
-			"hawk"
+			"hawk",
+			"flying",
+			"Banshee"
 		};
+		private static string airborne;
+		internal static string AirborneRegex {
+			get {
+				if (airborne != null) return airborne;
+				airborne = AirborneKeywords.AsRegex().ToString();
+				return airborne;
+			}
+		}
 
 		internal static readonly string[] CanineKeywords = new string[] {
-			"hound"
+			"hound",
+			"wolf",
+			"fox",
+			"dog",
+			"puppy"
 		};
+		private static string canine;
+		internal static string CanineRegex {
+			get {
+				if (canine != null) return canine;
+				canine = CanineKeywords.AsRegex().ToString();
+				return canine;
+			}
+		}
 
 		internal static readonly List<CardMetaCategory> defaultMeta = new List<CardMetaCategory> { CardMetaCategory.ChoiceNode, CardMetaCategory.TraderOffer };
 
@@ -213,9 +269,7 @@ namespace Act3Cards {
 			foreach(var name in cards) {
 				try {
 					var card = NewCard.cards.Find((moddedCard) => moddedCard.name == name);
-					if (card != null) {
-						outp.Add(card);
-					}
+					outp.Add(card);
 				} catch(NullReferenceException) {
 					logger.LogWarning($"Null ref when trying to access card {name}");
 					continue;
@@ -271,54 +325,72 @@ namespace Act3Cards {
 		}
 
 		private void EnableCard(CardInfo card, bool sideDeck) {
-			if (!UseBlankCards && card.portraitTex == null) return;
+			try {
+				if (!UseBlankCards && card.portraitTex == null) return;
 
-			Texture2D defaultTex = File.Exists(assets.PathFor(card.name,"png")) ? assets.LoadPNG(card.name) :  card.GetPortrait(true, true);
+				Texture2D defaultTex = File.Exists(assets.PathFor(card.name, "png")) ? assets.LoadPNG(card.name) : card.GetPortrait(true, true);
 
-			// this line prevents the texture from being blurry. It should already be set to this for GBC/normal cards, but not for textures on disk
-			defaultTex.filterMode = FilterMode.Point;
+				// this line prevents the texture from being blurry. It should already be set to this for GBC/normal cards, but not for textures on disk
+				defaultTex.filterMode = FilterMode.Point;
 
-			string cardName = card.name;
-			logger.LogMessage($"Making card {cardName} {(sideDeck ? "a side deck choice" : "usable in act 1")}");
+				string cardName = card.name;
+				logger.LogMessage($"Making card {cardName} {(sideDeck ? "a side deck choice" : "usable in act 1")}");
 
-			var meta = card.metaCategories;
-			var appear = card.appearanceBehaviour;
-			var traits = card.traits;
-			var evolvesInto = card.evolveParams;
-			var melted = card.iceCubeParams;
-			var sigils = card.DefaultAbilities;
-			var staticon = card.SpecialStatIcon;
+				var meta = card.metaCategories;
+				var appear = card.appearanceBehaviour;
+				var traits = card.traits;
+				var evolvesInto = card.evolveParams;
+				var melted = card.iceCubeParams;
+				var sigils = card.DefaultAbilities;
+				var staticon = card.SpecialStatIcon;
+				var tribes = GetTribesForCard(card.DisplayedNameEnglish);
 
-			if (!sideDeck && !meta.Contains(CardMetaCategory.Rare)) meta.AddRange(defaultMeta);
-			if (meta.Contains(CardMetaCategory.Rare) && !appear.Contains(CardAppearanceBehaviour.Appearance.RareCardBackground)) appear.Add(CardAppearanceBehaviour.Appearance.RareCardBackground);
-			if (!sideDeck && appear.Contains(CardAppearanceBehaviour.Appearance.RareCardBackground) && !meta.Contains(CardMetaCategory.Rare)) meta.Add(CardMetaCategory.Rare);
-			if (sideDeck) traits.Add(SideDeckTrait);
-			if (cardName == EmptyVessel && EmptyVesselConduit) sigils.Add(Ability.ConduitNull);
-			if (card.traits.Contains(Trait.Terrain)) appear.Add(CardAppearanceBehaviour.Appearance.TerrainBackground);
+				if (!sideDeck && !meta.Contains(CardMetaCategory.Rare)) meta.AddRange(defaultMeta);
+				if (meta.Contains(CardMetaCategory.Rare) && !appear.Contains(CardAppearanceBehaviour.Appearance.RareCardBackground)) appear.Add(CardAppearanceBehaviour.Appearance.RareCardBackground);
+				if (!sideDeck && appear.Contains(CardAppearanceBehaviour.Appearance.RareCardBackground) && !meta.Contains(CardMetaCategory.Rare)) meta.Add(CardMetaCategory.Rare);
+				if (sideDeck) traits.Add(SideDeckTrait);
+				if (cardName == EmptyVessel && EmptyVesselConduit) sigils.Add(Ability.ConduitNull);
+				if (card.traits.Contains(Trait.Terrain)) appear.Add(CardAppearanceBehaviour.Appearance.TerrainBackground);
 
-			if (meta.Contains(CardMetaCategory.Rare)) logger.LogDebug($"Card {cardName} is a rare");
+				if (meta.Contains(CardMetaCategory.Rare)) logger.LogDebug($"Card {cardName} is a rare");
 
-			NewCard.Add(
-				Name + "_" + cardName,
-				displayedName: UseInternalNames ? cardName : card.DisplayedNameLocalized,
-				baseAttack: card.Attack,
-				baseHealth: card.Health,
-				cardComplexity: card.cardComplexity,
-				metaCategories: meta,
-				temple: CardTemple.Nature,
-				abilities: sigils,
-				defaultTex: defaultTex,
-				energyCost: card.EnergyCost,
-				bonesCost: card.BonesCost,
-				bloodCost: card.BloodCost,
-				gemsCost: card.GemsCost,
-				appearanceBehaviour: appear,
-				evolveParams: evolvesInto,
-				iceCubeParams: melted,
-				specialStatIcon: staticon
-			);
-
+				NewCard.Add(
+					Name + "_" + cardName,
+					displayedName: UseInternalNames ? cardName : card.DisplayedNameLocalized,
+					baseAttack: card.Attack,
+					baseHealth: card.Health,
+					cardComplexity: card.cardComplexity,
+					metaCategories: meta,
+					temple: CardTemple.Nature,
+					tribes: tribes,
+					abilities: sigils,
+					defaultTex: defaultTex,
+					energyCost: card.EnergyCost,
+					bonesCost: card.BonesCost,
+					bloodCost: card.BloodCost,
+					gemsCost: card.GemsCost,
+					appearanceBehaviour: appear,
+					evolveParams: evolvesInto,
+					iceCubeParams: melted,
+					specialStatIcon: staticon
+				);
+			} catch(NullReferenceException) {
+				logger.LogWarning($"Null ref when accessing card {card.name}. It probably does not exist, which, depending on your modlist, could be intentional.");
+			}
 			logger.LogInfo(""); // newline for readability
+		}
+
+		private List<Tribe> GetTribesForCard(string displayedNameEnglish) {
+			List<Tribe> outp = new List<Tribe>();
+
+			if (Regex.IsMatch(displayedNameEnglish.ToUpper(), HoovedRegex)) outp.Add(Tribe.Hooved);
+			if (Regex.IsMatch(displayedNameEnglish.ToUpper(), SquirrelRegex)) outp.Add(Tribe.Squirrel);
+			if (Regex.IsMatch(displayedNameEnglish.ToUpper(), InsectRegex)) outp.Add(Tribe.Insect);
+			if (Regex.IsMatch(displayedNameEnglish.ToUpper(), ReptileRegex)) outp.Add(Tribe.Reptile);
+			if (Regex.IsMatch(displayedNameEnglish.ToUpper(), CanineRegex)) outp.Add(Tribe.Canine);
+			if (Regex.IsMatch(displayedNameEnglish.ToUpper(), AirborneRegex)) outp.Add(Tribe.Bird);
+
+			return outp;
 		}
 	}
 }

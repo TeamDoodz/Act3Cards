@@ -108,6 +108,7 @@ namespace Act3Cards {
 		// so instead we use a whitelist
 		internal static List<string> ModdedAct2Cards = new List<string>() {
 			//AraAct2
+			"Elkbait",
 			"MoxFox",
 			"Colormagus",
 			"Ghostviking",
@@ -122,7 +123,28 @@ namespace Act3Cards {
 			"Hyena",
 			"antbot",
 			"antbotqueen",
-			"Phoenix"
+			"Phoenix",
+			"UniverseMage",
+			"DropCage",
+			"DropBomb",
+			"Bone_Crypt",
+			"Poltergeist",
+			"MagetosisCard",
+			"Gravestone",
+			"Power_Core",
+			"Shining_Pearl",
+			"JǫrmungandrBody", // wtf
+			"JǫrmungandrTail",
+			"Jǫrmungandr",
+			"TyrantDraugr",
+			"TyrantRevenant",
+			"TyrantsHead",
+			"TyrantsHands",
+			"TyrantsTorso",
+			"TyrantsFeet",
+			"GreenCultist",
+			"OrangeCultist",
+			"BlueCultist"
 		};
 		internal static List<string> ModdedAct2Spells = new List<string>() {
 			//AraAct2
@@ -237,7 +259,8 @@ namespace Act3Cards {
 		internal static bool DoSpells = true;
 		internal static bool DoModded = true;
 
-		private const Trait SideDeckTrait = (Trait)5103;
+		private const Trait SideDeckTrait = (Trait)5103; // side in leetspeak
+		private const Trait enableTrait = (Trait)34813; // 3n413 (enable in leetspeak)
 		private const string EmptyVessel = "EmptyVessel";
 		public const GemType RandomGem = (GemType)3;
 

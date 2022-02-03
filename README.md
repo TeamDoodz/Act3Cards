@@ -18,7 +18,8 @@ Right now you can:
 
 ## Changelog
 
-## 1.1.0
+## 1.0.1
+- Updated to AraCardExpansionAct2 v1.3.0
 - Improved the Mox side deck; instead of giving you random cards, the deck contents are decided at the start of the battle in order to have an equal chance at each mox type.
 
 ## 1.0.0

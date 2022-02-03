@@ -44,7 +44,7 @@ namespace Act3Cards.MoxCard {
 			GemType chosenGem = currentSideDeck[0];
 			currentSideDeck.Remove(chosenGem);
 
-			Card.SetInfo(CardLoader.GetCardByName(chosenGem.MoxID("Act3Cards_")));
+			Card.SetInfo(CardLoader.GetCardByName(chosenGem.MoxID("Act3Cards_", SaveManager.SaveFile.GetCurrentRandomSeed())));
 			yield return null;
 		}
 

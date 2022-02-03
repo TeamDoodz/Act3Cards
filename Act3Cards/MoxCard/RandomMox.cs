@@ -10,15 +10,23 @@ using UnityEngine;
 namespace Act3Cards.MoxCard {
 	public class RandomMox : AbilityBehaviour {
 
+		public static readonly List<GemType> defaultSideDeck = new List<GemType>() {
+			GemType.Blue,
+			GemType.Blue,
+			GemType.Blue,
+			GemType.Orange,
+			GemType.Orange,
+			GemType.Orange,
+			GemType.Green,
+			GemType.Green,
+			GemType.Green,
+			MainPlugin.RandomGem
+		};
+		public static List<GemType> currentSideDeck = null;
+
 		public override Ability Ability => ability;
 		public static Ability ability;
 		public static AbilityIdentifier id;
-
-		public static readonly string[] Moxes = new string[] { 
-			"Act3Cards_MoxEmerald",
-			"Act3Cards_MoxSapphire",
-			"Act3Cards_MoxRuby",
-		};
 
 		public static void Init() {
 			AbilityInfo info = AbilityInfoUtils.CreateInfoWithDefaultSettings("Random Mox", "When [creature] is drawn, it is replaced with a random Mox card.");
@@ -32,10 +40,11 @@ namespace Act3Cards.MoxCard {
 		public override bool RespondsToDrawn() => true;
 
 		public override IEnumerator OnDrawn() {
-			Card.ClearAppearanceBehaviours();
-			Card.RenderCard();
-			Card.SetInfo(CardLoader.GetCardByName(Moxes.GetRandom(SaveManager.SaveFile.GetCurrentRandomSeed())));
-			SaveManager.SaveFile.randomSeed++;
+			if (currentSideDeck == null) currentSideDeck = (List<GemType>)defaultSideDeck.Shuffle(SaveManager.SaveFile.GetCurrentRandomSeed());
+			GemType chosenGem = currentSideDeck[0];
+			currentSideDeck.Remove(chosenGem);
+
+			Card.SetInfo(CardLoader.GetCardByName(chosenGem.MoxID("Act3Cards_")));
 			yield return null;
 		}
 

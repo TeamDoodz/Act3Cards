@@ -239,6 +239,7 @@ namespace Act3Cards {
 
 		private const Trait SideDeckTrait = (Trait)5103;
 		private const string EmptyVessel = "EmptyVessel";
+		public const GemType RandomGem = (GemType)3;
 
 		public static MainPlugin instance;
 

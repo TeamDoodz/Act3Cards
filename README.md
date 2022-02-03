@@ -13,7 +13,6 @@ Right now you can:
 - Choose whether or not act 2 spells are taken into account.
 
 ## Known issues
-- Beastly cards from Act 2 not present
 - Some cards will have incorrect or no portraits
 
 ## Changelog

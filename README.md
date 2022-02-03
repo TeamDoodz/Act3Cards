@@ -18,6 +18,10 @@ Right now you can:
 
 ## Changelog
 
+## 1.0.1
+- Updated to AraCardExpansionAct2 v1.3.0
+- Improved the Mox side deck; instead of giving you random cards, the deck contents are decided at the start of the battle in order to have an equal chance at each mox type.
+
 ## 1.0.0
 - Mod now has a Github page: https://github.com/TeamDoodz/Act3Cards
 - Added a Mox sidedeck. This change won't do anything if you are not using the selectable side deck mod.

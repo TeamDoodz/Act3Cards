@@ -22,7 +22,7 @@ namespace Act3Cards {
 
 		internal const string GUID = "io.github.TeamDoodz." + Name;
 		internal const string Name = nameof(Act3Cards);
-		internal const string Version = "1.0.0";
+		internal const string Version = "1.1.0";
 		internal static ManualLogSource logger;
 
 		internal static string[] Blacklist = new string[] {
@@ -381,6 +381,8 @@ namespace Act3Cards {
 				var staticon = card.SpecialStatIcon;
 				var special = card.SpecialAbilities;
 				var tribes = GetTribesForCard(card.DisplayedNameEnglish);
+
+			
 
 				if (!sideDeck && !meta.Contains(CardMetaCategory.Rare)) meta.AddRange(defaultMeta);
 				if (meta.Contains(CardMetaCategory.Rare) && !appear.Contains(CardAppearanceBehaviour.Appearance.RareCardBackground)) appear.Add(CardAppearanceBehaviour.Appearance.RareCardBackground);

@@ -22,7 +22,7 @@ namespace Act3Cards {
 
 		internal const string GUID = "io.github.TeamDoodz." + Name;
 		internal const string Name = nameof(Act3Cards);
-		internal const string Version = "1.0.0";
+		internal const string Version = "1.1.0";
 		internal static ManualLogSource logger;
 
 		internal static string[] Blacklist = new string[] {
@@ -338,14 +338,41 @@ namespace Act3Cards {
 			DoModded = Config.Bind("Misc", "DoModded", true, "Make modded cards usable as well.").Value;
 			DoSpells = Config.Bind("Spells", "DoSpells", true, "Make modded spells usable as well.").Value;
 
-			//TODO: Make ModdedAct2Cards configurable
-			/*
-			try {
-				ModdedAct2Cards = ListFileManager.LoadList("ModdedAct2Cards", ModdedAct2Cards);
-			} catch(UnauthorizedAccessException) {
-				logger.LogWarning($"Could not access {nameof(ModdedAct2Cards)}.txt due to permission issues. Please set the permissions of the plugin folder propely.");
+			string moddedAct2CardsPath = assets.PathFor(nameof(ModdedAct2Cards), "csv");
+			if (!File.Exists(moddedAct2CardsPath)) {
+				logger.LogWarning($"{moddedAct2CardsPath} does not exist. Please create it if you want to edit it.");
+			} else {
+				ModdedAct2Cards = assets.LoadCSV(nameof(ModdedAct2Cards)).ToList();
 			}
-			*/
+				logger.LogMessage($"----Begin {nameof(ModdedAct2Cards)}----");
+				foreach(var element in ModdedAct2Cards) {
+					logger.LogInfo(element);
+				}
+				logger.LogMessage($"----End {nameof(ModdedAct2Cards)}----");
+
+			string moddedAct2SpellsPath = assets.PathFor(nameof(ModdedAct2Spells), "csv");
+			if (!File.Exists(moddedAct2SpellsPath)) {
+				logger.LogWarning($"{moddedAct2SpellsPath} does not exist. Please create it if you want to edit it.");
+			} else {
+				ModdedAct2Spells = assets.LoadCSV(nameof(ModdedAct2Spells)).ToList();
+			}
+				logger.LogMessage($"----Begin {nameof(ModdedAct2Spells)}----");
+				foreach (var element in ModdedAct2Spells) {
+					logger.LogInfo(element);
+				}
+				logger.LogMessage($"----End {nameof(ModdedAct2Spells)}----");
+
+			string blacklistPath = assets.PathFor(nameof(Blacklist), "csv");
+			if (!File.Exists(blacklistPath)) {
+				logger.LogWarning($"{blacklistPath} does not exist. Please create it if you want to edit it.");
+			} else {
+				Blacklist = assets.LoadCSV(nameof(Blacklist));
+			}
+				logger.LogMessage($"----Begin {nameof(Blacklist)}----");
+				foreach (var element in Blacklist) {
+					logger.LogInfo(element);
+				}
+				logger.LogMessage($"----End {nameof(Blacklist)}----");
 		}
 
 		private void EnableValidCards() {
@@ -381,6 +408,8 @@ namespace Act3Cards {
 				var staticon = card.SpecialStatIcon;
 				var special = card.SpecialAbilities;
 				var tribes = GetTribesForCard(card.DisplayedNameEnglish);
+
+			
 
 				if (!sideDeck && !meta.Contains(CardMetaCategory.Rare)) meta.AddRange(defaultMeta);
 				if (meta.Contains(CardMetaCategory.Rare) && !appear.Contains(CardAppearanceBehaviour.Appearance.RareCardBackground)) appear.Add(CardAppearanceBehaviour.Appearance.RareCardBackground);

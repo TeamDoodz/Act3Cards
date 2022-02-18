@@ -3,7 +3,7 @@ Use cards from act 3 (or any act for that matter) in act 1
 
 ## How to use
 Just download the mod and it should work normally. Keep in mind that there may be bugs. <br/> <br/>
-The Skeleton and Empty Vessel cards are not present in choice nodes. If you have the side deck selector mod installed, those cards will be possible choices for side decks.
+The Skeleton, Empty Vessel, and all Mox cards are not present in choice nodes. If you have the side deck selector mod installed, those cards will be possible choices for side decks.
 
 ## Config
 Right now you can: 
@@ -11,9 +11,11 @@ Right now you can:
 - Choose whether or not cards with no high-res portrait will be present.
 - Give Empty Vessels the "Null Conduit" sigil.
 - Choose whether or not act 2 spells are taken into account.
+- Specify a Blacklist as well as other configurations
 
 ## Known issues
 - Some cards will have incorrect or no portraits
+- Some cards will have weird tribes set, like the Reven*ant* having an insect tribe. I find this funny and therefore will not be fixing it.
 
 ## Changelog
 

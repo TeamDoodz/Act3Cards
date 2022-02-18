@@ -9,6 +9,7 @@ namespace Act3Cards.MoxCard {
 	public class AddMoxCard {
 
 		public void Create(string name, Texture2D tex) {
+			/*
 			NewCard.Add(
 				name: name,
 				displayedName: "Random Mox",
@@ -25,6 +26,7 @@ namespace Act3Cards.MoxCard {
 				decals: new List<Texture>() { tex },
 				abilities: new List<Ability>() { RandomMox.ability }
 			);
+			*/
 		}
 
 	}

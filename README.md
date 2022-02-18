@@ -18,6 +18,7 @@ Right now you can:
 ## Changelog
 
 ## 1.1.0
+- Made the Blacklist, Modded Act 2 Spells, and Modded Act 2 Cards configurable
 
 ## 1.0.1
 - Updated to AraCardExpansionAct2 v1.3.0

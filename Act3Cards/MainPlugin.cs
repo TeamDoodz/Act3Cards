@@ -274,7 +274,7 @@ namespace Act3Cards {
 			get {
 				if (allValidCards != null) return allValidCards;
 				List<CardInfo> AllCards = new List<CardInfo>();
-				AllCards.AddRange(CardLoader.AllData); // all vanilla cards
+				AllCards.AddRange(CardManager.BaseGameCards); // all vanilla cards
 				{
 					List<CardInfo> act2cards = GetAllModdedAct2Cards();
 					if (act2cards != null) AllCards.AddRange(act2cards); // all modded cards

@@ -16,7 +16,7 @@ using UnityEngine;
 namespace Act3Cards {
 	[BepInPlugin(GUID, Name, Version)]
 	[BepInDependency("cyantist.inscryption.api", BepInDependency.DependencyFlags.HardDependency)]
-	[BepInDependency("zorro.inscryption.infiniscryption.spells", BepInDependency.DependencyFlags.HardDependency)]
+	//[BepInDependency("zorro.inscryption.infiniscryption.spells", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency("io.github.TeamDoodz.TDLib", BepInDependency.DependencyFlags.HardDependency)]
 	public class MainPlugin : BaseUnityPlugin {
 

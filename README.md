@@ -19,6 +19,9 @@ Right now you can:
 
 ## Changelog
 
+## 1.2.0
+- Removed dependancy to Spell Card Toolkit
+
 ## 1.1.0
 - Made the Blacklist, Modded Act 2 Spells, and Modded Act 2 Cards configurable
 

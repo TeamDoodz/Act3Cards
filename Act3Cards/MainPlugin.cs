@@ -8,6 +8,7 @@ using APIPlugin;
 using BepInEx;
 using BepInEx.Logging;
 using DiskCardGame;
+using InscryptionAPI.Card;
 using TDLib.FileManagement;
 using TDLib.GameContent;
 using TDLib.Strings;
@@ -299,7 +300,7 @@ namespace Act3Cards {
 			if (DoSpells) cards.AddRange(ModdedAct2Spells);
 			foreach(var name in cards) {
 				try {
-					var card = NewCard.cards.Find((moddedCard) => moddedCard.name == name);
+					var card = CardManager.AllCardsCopy.Find((moddedCard) => moddedCard.name == name);
 					if (card != null) {
 						outp.Add(card);
 					}
@@ -321,8 +322,8 @@ namespace Act3Cards {
 
 			GetConfig();
 			EnableValidCards();
-			RandomMox.Init();
-			new AddMoxCard().Create("Act3Cards_Mox",assets.LoadPNG("portrait_mox"));
+			//RandomMox.Init();
+			//new AddMoxCard().Create("Act3Cards_Mox",assets.LoadPNG("portrait_mox"));
 		}
 
 		private void GetConfig() {
@@ -436,7 +437,8 @@ namespace Act3Cards {
 				}
 				if (meta.Contains(CardMetaCategory.Rare)) logger.LogDebug($"Card {cardName} is a rare");
 
-				NewCard.Add(
+				/*
+				CardManager.(
 					Name + "_" + cardName,
 					displayedName: UseInternalNames ? cardName : card.DisplayedNameLocalized,
 					baseAttack: card.Attack,
@@ -458,6 +460,26 @@ namespace Act3Cards {
 					iceCubeParams: melted,
 					specialStatIcon: staticon
 				);
+				*/
+				CardInfo info = CardManager.New(Name + "_" + cardName,
+					UseInternalNames ? cardName : card.DisplayedNameLocalized,
+					card.Attack,
+					card.Health,
+					addToPool: false // we will do this manually, i dont trust the api for a second lol
+				);
+				info.metaCategories = meta;
+				info.temple = CardTemple.Nature;
+				info.tribes = tribes;
+				info
+					.SetCost(card.BloodCost, card.BonesCost, card.EnergyCost, card.GemsCost)
+					.AddSpecialAbilities(special.ToArray())
+					.AddTraits(card.traits.ToArray())
+					.AddAbilities(sigils.ToArray())
+					.SetEvolve(evolvesInto.evolution, evolvesInto.turnsToEvolve)
+					.SetIceCube(melted.creatureWithin, new List<CardModificationInfo>())
+					.AddDecal((isDecal ? new List<Texture>() { defaultTex } : new List<Texture>()).ToArray())
+					.SetPortrait(isDecal ? null : defaultTex, FilterMode.Point)
+					.appearanceBehaviour = appear;
 			} catch(NullReferenceException) {
 				logger.LogWarning($"Null ref when generating card {card.name}. If that card does not exist, ignore this error. Otherwise report this warning to me.");
 			}

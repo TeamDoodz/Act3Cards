@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using APIPlugin;
 using DiskCardGame;
+using InscryptionAPI.Card;
 using TDLib.Collections;
 using UnityEngine;
 
@@ -26,15 +27,13 @@ namespace Act3Cards.MoxCard {
 
 		public override Ability Ability => ability;
 		public static Ability ability;
-		public static AbilityIdentifier id;
+		//public static AbilityIdentifier id;
 
 		public static void Init() {
-			AbilityInfo info = AbilityInfoUtils.CreateInfoWithDefaultSettings("Random Mox", "When [creature] is drawn, it is replaced with a random Mox card.");
-			info.canStack = true;
+			AbilityInfo info = AbilityManager.New(MainPlugin.GUID,"Random Mox", "When [creature] is drawn, it is replaced with a random Mox card.", typeof(RandomMox), new Texture2D(49, 49));
+			info.canStack = false;
 			info.opponentUsable = false;
-			id = AbilityIdentifier.GetAbilityIdentifier(MainPlugin.GUID, nameof(RandomMox));
-			NewAbility a = new NewAbility(info, typeof(RandomMox), new Texture2D(49,49), id: id);
-			ability = a.ability;
+			ability = info.ability;
 		}
 
 		public override bool RespondsToDrawn() => true;
